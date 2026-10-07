@@ -23,7 +23,9 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(DIRECTORY models worlds DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY models worlds DESTINATION share/${PROJECT_NAME}
+  FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
+  DIRECTORY_PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # Install Python executables
 install(PROGRAMS

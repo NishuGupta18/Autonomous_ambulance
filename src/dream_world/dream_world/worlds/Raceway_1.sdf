@@ -159,64 +159,57 @@
 	</include>
 	
 
-	<!-- Patient 1 -->
-	<!--
-	<include>
-		<uri>models://some_office</uri>
-		<name>home_1</name>
-		<pose>-1.5 15.2 0 0 0 -0.6</pose>
-	</include>
-	<include>
-		<uri>models://Patient_sign_board_1</uri>
-		<name>Patient_qr_sign_board_1</name>
-		<pose>-2.0 14.0 0 0 0 1.0</pose>
-	</include>
-	<include>
-		<uri>models://TrolleyBedPatient</uri>
-		<name>patient_1</name>
-		<pose>-2 14 0 0 0 -0.7</pose>
-	</include>
-	-->
+<!-- Patient 1 -->
+    <include>
+        <uri>models://some_office</uri>
+        <name>home_1</name>
+        <pose>-1.5 15.2 0 0 0 -0.6</pose>
+    </include>
+    <include>
+        <uri>models://Patient_sign_board_1</uri>
+        <name>Patient_qr_sign_board_1</name>
+        <pose>-2.0 14.0 0 0 0 1.0</pose>
+    </include>
+    <include>
+        <uri>models://TrolleyBedPatient</uri>
+        <name>patient_1</name>
+        <pose>-2 14 0 0 0 -0.7</pose>
+    </include>
 
-	
-	<!-- Patient 2 -->
-	<!--
-	<include>
-		<uri>models://some_office</uri>
-		<name>home_2</name>
-		<pose>16.310200 -2.95 0 0 0 -3.133190</pose>
-	</include>
-	<include>
-		<uri>models://Patient_sign_board_2</uri>
-		<name>Patient_qr_sign_board_2</name>
-		<pose>15.946900 -1.6 0 0 0 1.5</pose>
-	</include>
-	<include>
-		<uri>models://TrolleyBedPatient</uri>
-		<name>patient_2</name>
-		<pose>15.810500 -1.799490 0 0 0 0</pose>
-	</include>
-	-->
-	
+    <!-- Patient 2 -->
+    <include>
+        <uri>models://some_office</uri>
+        <name>home_2</name>
+        <pose>16.310200 -2.95 0 0 0 -3.133190</pose>
+    </include>
+    <include>
+        <uri>models://Patient_sign_board_2</uri>
+        <name>Patient_qr_sign_board_2</name>
+        <pose>15.946900 -1.6 0 0 0 1.5</pose>
+    </include>
+    <include>
+        <uri>models://TrolleyBedPatient</uri>
+        <name>patient_2</name>
+        <pose>15.810500 -1.799490 0 0 0 0</pose>
+    </include>
 
-	<!-- Patient 3 -->
-	<!--
-	<include>
-		<uri>models://some_office</uri>
-		<name>home_3</name>
-		<pose>1.621580 33.076 0 0 0 0.1</pose>
-	</include>
-	<include>
-		<uri>models://Patient_sign_board_3</uri>
-		<name>Patient_qr_sign_board_3</name>
-		<pose>2.134480 31.7 0 0 0 1.7</pose>
-	</include>
-	<include>
-		<uri>models://TrolleyBedPatient</uri>
-		<name>patient_3</name>
-		<pose>2.164130 31.967300 0 0 0 0.1</pose>
-	</include>
-	-->
+    <!-- Patient 3 -->
+    <include>
+        <uri>models://some_office</uri>
+        <name>home_3</name>
+        <pose>1.621580 33.076 0 0 0 0.1</pose>
+    </include>
+    <include>
+        <uri>models://Patient_sign_board_3</uri>
+        <name>Patient_qr_sign_board_3</name>
+        <pose>2.134480 31.7 0 0 0 1.7</pose>
+    </include>
+    <include>
+        <uri>models://TrolleyBedPatient</uri>
+        <name>patient_3</name>
+        <pose>2.164130 31.967300 0 0 0 0.1</pose>
+    </include>
+	
 
 
 	<!-- Hospital 1 -->

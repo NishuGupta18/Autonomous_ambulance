@@ -222,7 +222,7 @@
 
 
 	<!-- Hospital 1 -->
-	<!--
+	
 	<include>
 		<uri>models://Hospital</uri>
 		<name>hospital_1</name>
@@ -238,7 +238,7 @@
 		<name>Parking_Lot_1</name>
 		<pose>4.19 -10.0 -0.01 0 0 1.55</pose>
 	</include>
-	-->
+	
 
 	
 	<!-- Hospital 2 -->

@@ -18,6 +18,7 @@ from sensor_msgs.msg import CompressedImage
 from std_msgs.msg import String
 import cv2
 import numpy as np
+import time
 
 # HINT: If you want to use pyzbar for QR code detection, you can install it using:
 # pip install pyzbar
@@ -50,15 +51,43 @@ class QRDetector(Node):
 
         self.get_logger().info("QR Detector Node started. Waiting for images...")
 
+        # --- Persistent QR detector (reuse across frames) ---
+        self.qr_detector = cv2.QRCodeDetector()
+
+        # --- Frame skip for performance ---
+        self.frame_count = 0
+        self.PROCESS_EVERY_N = 2       # Process 1 in 2 frames
+
+        # --- Debounce: don't re-publish same QR within N seconds ---
+        self.last_published_qr = None
+        self.last_published_time = 0.0
+        self.DEBOUNCE_SECONDS = 2.0    # Must be shorter than line follower's 3s debounce
+
     def camera_image_callback(self, message):
         """Processes incoming camera frames to detect QR codes."""
+        # Frame skip for performance
+        self.frame_count += 1
+        if self.frame_count % self.PROCESS_EVERY_N != 0:
+            return
+
         # Convert compressed image message to OpenCV format
         np_arr = np.frombuffer(message.data, np.uint8)
         image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        if image is None:
+            return
 
         qr_data = self.detect_qr_code(image)
 
         if qr_data is not None:
+            current_time = time.time()
+            # Debounce — don't re-publish same QR within DEBOUNCE_SECONDS
+            if (qr_data == self.last_published_qr and
+                    (current_time - self.last_published_time) < self.DEBOUNCE_SECONDS):
+                return
+
+            self.last_published_qr = qr_data
+            self.last_published_time = current_time
+
             # Publish the decoded QR payload
             msg = String()
             msg.data = qr_data
@@ -68,28 +97,47 @@ class QRDetector(Node):
     def detect_qr_code(self, image):
         """
         Detect and decode QR code in the image.
-        
-        OPTIMIZATION HINTS:
-        - OpenCV has a built-in QR Code detector: cv2.QRCodeDetector().
-        - Alternatively, you can use Pyzbar (a popular and robust library for barcode/QR code reading).
-        - Ensure to pre-process the image (e.g., convert to grayscale, thresholding, cropping to region 
-          of interest where the building/QR board is expected to appear) to improve speed and reliability.
+        Uses multiple strategies for robustness:
+        1. Direct detection on original image
+        2. Detection on pre-processed (grayscale + contrast enhanced) image
+        3. Detection on sharpened image (for blurry/distant QR)
         """
-        # --- Method 1: Using OpenCV Built-in QR Detector ---
+        # --- Strategy 1: Direct detection (fastest, works when QR is clean & frontal) ---
+        result = self._try_opencv_detect(image)
+        if result is not None:
+            return result
+
+        # --- Strategy 2: Grayscale + CLAHE contrast enhancement ---
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        enhanced = clahe.apply(gray)
+        # Convert back to 3-channel for QRCodeDetector (some versions require it)
+        enhanced_bgr = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
+
+        result = self._try_opencv_detect(enhanced_bgr)
+        if result is not None:
+            return result
+
+        # --- Strategy 3: Sharpen for distant/blurry QR ---
+        kernel = np.array([[-1, -1, -1],
+                           [-1,  9, -1],
+                           [-1, -1, -1]])
+        sharpened = cv2.filter2D(image, -1, kernel)
+
+        result = self._try_opencv_detect(sharpened)
+        if result is not None:
+            return result
+
+        return None
+
+    def _try_opencv_detect(self, image):
+        """Attempt QR detection using the persistent OpenCV detector."""
         try:
-            detector = cv2.QRCodeDetector()
-            data, bbox, straight_qrcode = detector.detectAndDecode(image)
+            data, bbox, _ = self.qr_detector.detectAndDecode(image)
             if bbox is not None and data != "":
                 return data
         except Exception as e:
             self.get_logger().debug(f"OpenCV QR Detection failed: {e}")
-
-        # --- Method 2: Placeholder for Pyzbar ---
-        # if pyzbar is not None:
-        #     decoded_objects = pyzbar.decode(image)
-        #     for obj in decoded_objects:
-        #         return obj.data.decode('utf-8')
-
         return None
 
 def main(args=None):

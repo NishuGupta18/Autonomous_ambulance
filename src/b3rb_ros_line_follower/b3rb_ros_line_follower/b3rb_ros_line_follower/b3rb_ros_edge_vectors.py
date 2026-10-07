@@ -30,8 +30,9 @@ GREEN_COLOR = (0, 255, 0)
 
 # HINT: You can adjust what percentage of the image from the bottom is analyzed.
 # Lower portions are closer to the buggy, while upper portions see further ahead.
-VECTOR_IMAGE_HEIGHT_PERCENTAGE = 0.225
-VECTOR_MAGNITUDE_MINIMUM = 2.25
+VECTOR_IMAGE_HEIGHT_PERCENTAGE = 0.35     #default: 0.225 (22.5% of the image height from the bottom is analyzed)
+VECTOR_MAGNITUDE_MINIMUM = 3.5     #default: 2.25 (minimum length of a vector to be considered valid, in pixels)
+VECTOR_IMAGE_BOTTOM_CROP = 0.15         
 
 class EdgeVectorsPublisher(Node):
     """
@@ -155,16 +156,34 @@ class EdgeVectorsPublisher(Node):
         self.upper_image_height = int(self.image_height - self.lower_image_height)
 
         # 1. Convert to Grayscale
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)        #convert to HSV color space for better color segmentation
+        lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)        #convert to LAB color space for better lightness segmentation
+        l_channel = cv2.GaussianBlur(lab[:,:,0], (5, 5), 0)
 
         # 2. Binary Thresholding (aiming to isolate the black stripes of the track)
         # Note: In the simulation, black stripes will result in low intensity values (close to 0).
-        threshold_black = 25
-        thresh = cv2.threshold(gray, threshold_black, 255, cv2.THRESH_BINARY_INV)[1]
+        
+        # threshold_black = 15
+        # thresh = cv2.threshold(gray, threshold_black, 255, cv2.THRESH_BINARY_INV)[1]
+        thresh = cv2.adaptiveThreshold(
+            l_channel, 255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY_INV,
+            31, 12
+        )
+        saturation = hsv[:, :, 1]
+        value = hsv[:, :, 2]
+        neutral_mask = cv2.inRange(saturation, 0, 20)  # Mask for low saturation (neutral colors)
+        black_value_mask = cv2.inRange(value, 0, 50)
+        thresh = cv2.bitwise_and(thresh, neutral_mask)
+        thresh = cv2.bitwise_and(thresh, black_value_mask)
 
         # 3. Crop the image to focus on the lower section close to the buggy
-        thresh_cropped = thresh[self.image_height - self.lower_image_height:]
-        image_cropped = image[self.image_height - self.lower_image_height:].copy()
+        crop_end = int(self.image_height * (1 - VECTOR_IMAGE_BOTTOM_CROP))
+        thresh_cropped = thresh[self.image_height - self.lower_image_height : crop_end, :]
+        image_cropped = image[self.image_height - self.lower_image_height : crop_end, :].copy()
 
         # 4. Compute vectors from the binary image contours
         vectors, debug_img = self.compute_vectors_from_image(image_cropped, thresh_cropped)
@@ -174,7 +193,7 @@ class EdgeVectorsPublisher(Node):
 
         # 6. Split vectors based on left/right halves of the image
         half_width = self.image_width / 2
-        vectors_left = [v for v in vectors if ((v[0][0] + v[1][0]) / 2) < half_width]
+        vectors_left = [v for v in vectors if ((v[0][0] + v[1][0]) / 2) < half_width] 
         vectors_right = [v for v in vectors if ((v[0][0] + v[1][0]) / 2) >= half_width]
 
         final_vectors = []
