@@ -2,6 +2,15 @@
 
 ![NXP CUP](Images/NXPCUP.png)
 
+## Team Repository
+
+The team's working repository is [Autonomous_ambulance](https://github.com/NishuGupta18/Autonomous_ambulance). To get a local copy:
+
+```bash
+git clone https://github.com/NishuGupta18/Autonomous_ambulance.git
+cd Autonomous_ambulance
+```
+
 ## 📒 Index
 * [INTRODUCTION](#introduction)
     * [HARDWARE](#hardware)
